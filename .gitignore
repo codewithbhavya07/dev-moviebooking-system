@@ -1,0 +1,54 @@
+# ========================
+# Maven Build Output
+# ========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ========================
+# IDE & Editor Files
+# ========================
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+*.classpath
+*.project
+.settings/
+
+# ========================
+# OS Generated Files
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# Compiled Class Files
+# ========================
+*.class
+bin/
+
+# ========================
+# Log Files
+# ========================
+*.log
+logs/
+
+# ========================
+# Package Files
+# ========================
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ========================
+# Sensitive / Local Config
+# ========================
+# Keep application.properties tracked but exclude any local overrides
+src/main/resources/application-local.properties
+cookies.txt
