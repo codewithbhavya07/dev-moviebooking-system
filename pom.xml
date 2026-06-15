@@ -11,6 +11,7 @@
     <groupId>com.moviebooking</groupId>
     <artifactId>online-movie-booking-system</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
     <name>online-movie-booking-system</name>
     <description>Premium Online Movie Ticket Booking System built with Spring Boot</description>
     
