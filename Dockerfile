@@ -1,4 +1,4 @@
-# ── Stage 1: Build ──────────────────────────────────────────────
+# ── Stage 1: Build + Extract WAR ────────────────────────────────
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
@@ -6,21 +6,27 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy source and build WAR
+# Build WAR
 COPY src ./src
 RUN mvn clean package -DskipTests -B
 
-# ── Stage 2: Run ────────────────────────────────────────────────
+# Extract WAR in the build stage (Maven image has full JDK with 'jar' tool)
+# JSP files must be on the real filesystem - Jasper cannot compile from inside a ZIP
+RUN mkdir -p /app/exploded && \
+    cd /app/exploded && \
+    jar xf /app/target/*.war && \
+    echo "Extracted WAR contents:" && \
+    ls -la /app/exploded/WEB-INF/
+
+# ── Stage 2: Run from exploded WAR ──────────────────────────────
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Copy WAR and extract it so JSP files exist on the filesystem
-# (Tomcat Jasper requires file-system access to compile JSPs — they cannot
-#  be compiled from inside a zipped WAR archive)
-COPY --from=build /app/target/*.war app.war
-RUN jar -xf app.war && rm app.war
+# Copy the fully extracted WAR directory (not the zip file)
+COPY --from=build /app/exploded .
 
 EXPOSE 8080
 
-# Use Spring Boot's WarLauncher (embedded in the extracted WAR root)
-ENTRYPOINT ["java", "org.springframework.boot.loader.WarLauncher"]
+# WarLauncher is at org/springframework/boot/loader/WarLauncher.class (WAR root)
+# -cp . adds the current working dir (/app) to the classpath so JVM can find it
+ENTRYPOINT ["java", "-cp", ".", "org.springframework.boot.loader.WarLauncher"]
