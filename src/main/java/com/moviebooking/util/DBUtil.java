@@ -11,14 +11,16 @@ public class DBUtil {
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
 
     static {
-        // Read from Railway env vars; fall back to local dev values
-        String host = getEnv("MYSQLHOST", "localhost");
-        String port = getEnv("MYSQLPORT", "3306");
-        String db   = getEnv("MYSQLDATABASE", "movie_booking_system");
-        USERNAME    = getEnv("MYSQLUSER", "root");
-        PASSWORD    = getEnv("MYSQLPASSWORD", "Bat@123456");
+        // Railway exports both MYSQLHOST and MYSQL_HOST formats — try both
+        String host = getEnv("MYSQLHOST",     getEnv("MYSQL_HOST",     "localhost"));
+        String port = getEnv("MYSQLPORT",     getEnv("MYSQL_PORT",     "3306"));
+        String db   = getEnv("MYSQLDATABASE", getEnv("MYSQL_DATABASE", "movie_booking_system"));
+        USERNAME    = getEnv("MYSQLUSER",     getEnv("MYSQL_USER",     "root"));
+        PASSWORD    = getEnv("MYSQLPASSWORD", getEnv("MYSQL_PASSWORD", "Bat@123456"));
         URL = "jdbc:mysql://" + host + ":" + port + "/" + db
                 + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+
+        System.out.println("[DBUtil] Connecting to: jdbc:mysql://" + host + ":" + port + "/" + db);
 
         try {
             Class.forName(DRIVER);
