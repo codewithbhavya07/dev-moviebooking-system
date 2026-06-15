@@ -2,11 +2,11 @@
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Cache dependencies first (only re-downloads when pom.xml changes)
+# Cache dependencies first
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy source and build
+# Copy source and build WAR
 COPY src ./src
 RUN mvn clean package -DskipTests -B
 
@@ -14,8 +14,13 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-COPY --from=build /app/target/*.war app.jar
+# Copy WAR and extract it so JSP files exist on the filesystem
+# (Tomcat Jasper requires file-system access to compile JSPs — they cannot
+#  be compiled from inside a zipped WAR archive)
+COPY --from=build /app/target/*.war app.war
+RUN jar -xf app.war && rm app.war
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Use Spring Boot's WarLauncher (embedded in the extracted WAR root)
+ENTRYPOINT ["java", "org.springframework.boot.loader.WarLauncher"]
